@@ -7,10 +7,6 @@ PatchInfo* noRecoil = new PatchInfo("hitman3.exe", "\x74\x00\x48\x8d\x15\x00\x00
 PatchInfo* noSpread = new PatchInfo("hitman3.exe", "\xf3\x44\x0f\x11\x87\x00\x00\x00\x00\x76", "xxxxx????x", "\x90\x90\x90\x90\x90\x90\x90\x90\x90", "No Spread");
 PatchInfo* infiniteAmmo = new PatchInfo("hitman3.exe", "\xe8\x00\x00\x00\x00\x83\xbf\x00\x00\x00\x00\x00\x76\x00\xc7\x87", "x????xx?????x?xx", "\x90\x90\x90\x90\x90", "Infinite Ammo");
 
-void __stdcall onShootCallback(char ok[430]) {
-
-}
-
 void loadHack() {
     Utils::setupConsole();
     Logger* logger = Factory::getDefaultLogger();
