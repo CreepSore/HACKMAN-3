@@ -46,6 +46,20 @@ duk_ret_t js_read_uint8(duk_context* ctx) {
     return 1;
 }
 
+duk_ret_t js_read(duk_context* ctx) {
+    DWORD64 address = duk_get_number(ctx, 0);
+    DWORD64 size = duk_get_number(ctx, 1);
+    DWORD64 num = *(DWORD64*)address;
+
+    DWORD64 bitshift = 0;
+    for (DWORD64 i = 0; i < size; i++) {
+        bitshift += 0xFF << i*8;
+    }
+
+    duk_push_number(ctx, num & bitshift);
+    return 1;
+}
+
 duk_ret_t js_readBytes(duk_context* ctx) {
     DWORD64 address = (DWORD64)duk_get_number(ctx, 0);
     DWORD64 count = (DWORD64)duk_get_number(ctx, 1);
@@ -68,8 +82,17 @@ duk_ret_t js_read_string(duk_context* ctx) {
 }
 
 duk_ret_t js_write(duk_context* ctx) {
+    DWORD64 address = duk_get_number(ctx, 0);
+    DWORD64 value = duk_get_number(ctx, 1);
+    DWORD64 size = duk_get_number(ctx, 2);
 
+    memcpy((void*)address, (void*)value, size);
     return 0;
+}
+
+duk_ret_t js_getTickCount(duk_context* ctx) {
+    duk_push_number(ctx, GetTickCount64());
+    return 1;
 }
 
 void Utils::setupJsContext(duk_context* ctx) {
@@ -91,6 +114,12 @@ void Utils::setupJsContext(duk_context* ctx) {
     duk_push_c_function(ctx, js_readBytes, 2);
     duk_put_global_string(ctx, "readBytes");
 
-    duk_push_c_function(ctx, js_write, 2);
+    duk_push_c_function(ctx, js_read, 2);
+    duk_put_global_string(ctx, "read");
+
+    duk_push_c_function(ctx, js_write, 3);
     duk_put_global_string(ctx, "write");
+
+    duk_push_c_function(ctx, js_getTickCount, 2);
+    duk_put_global_string(ctx, "getTickCount");
 }

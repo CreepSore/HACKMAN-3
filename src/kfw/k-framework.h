@@ -92,6 +92,7 @@ namespace kfw {
         class Logger {
         public:
             void log(const std::string& msg, const std::string& context);
+            static void setupJsContext(duk_context* ctx);
         };
 
         class Utils {

@@ -1,16 +1,23 @@
 // @ts-nocheck
 (function() {
-    function Test(){
-        this.a = 420;
+    function Hackman3(){
+        this.ips = 0;
+        this.lastPrint = getTickCount();
 
-        this.test = function() {
-            var addr = util_findPattern("hitman3.exe", "\xf3\x44\x0f\x11\x87\x00\x00\x00\x00\x76", "xxxxx????x");
-            if(addr === 0) {
-                return null;
+        this.init = function() {
+            log("Initialized", "JS");
+        };
+
+        this.loop = function() {
+            var tc = getTickCount();
+            if(tc - this.lastPrint > 1000) {
+                log("Instructions per Second: " + this.ips, "JS");
+                this.lastPrint = tc;
+                this.ips = 0;
             }
-            return readBytes(addr, 20);
-        }
+            this.ips++;
+        };
     }
 
-    return new Test();
+    return new Hackman3();
 })();

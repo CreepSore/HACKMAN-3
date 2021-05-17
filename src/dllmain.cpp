@@ -11,6 +11,9 @@ PatchInfo* noSpread = new PatchInfo("hitman3.exe", "\xf3\x44\x0f\x11\x87\x00\x00
 PatchInfo* infiniteAmmo = new PatchInfo("hitman3.exe", "\xe8\x00\x00\x00\x00\x83\xbf\x00\x00\x00\x00\x00\x76\x00\xc7\x87", "x????xx?????x?xx", "\x90\x90\x90\x90\x90", "Infinite Ammo"); // 0x140fc1c6
 PatchInfo* pistolsMakeNoSound = new PatchInfo("hitman3.exe", "\xff\x90\x00\x00\x00\x00\x48\x8b\x06\x48\x8b\xce\xff\x90\x00\x00\x00\x00\x0f\x28\xbc\x24", "xx????xxxxxxxx????xxxx", "\x90\x90\x90\x90\x90\x90", "No Pistol sound");
 
+bool jsInitialized = false;
+duk_idx_t scriptIdx = 0;
+
 void initializeJs() {
     std::ifstream sScript("kfw.js");
     std::string readScript((std::istreambuf_iterator<char>(sScript)),
@@ -19,18 +22,17 @@ void initializeJs() {
 
     duk_context* jCtx = Factory::getDefaultJsContext();
     Utils::setupJsContext(jCtx);
+    Logger::setupJsContext(jCtx);
     if (duk_peval_string(jCtx, readScript.c_str()) != 0) {
-        std::cout << "eval failed: %s\n" << duk_safe_to_string(jCtx, -1) << std::endl;
+        std::cout << "eval failed: " << duk_safe_to_string(jCtx, -1) << std::endl;
     }
     else {
-        duk_idx_t idx = 0;
         duk_push_string(jCtx, "init");
-        if (duk_pcall_prop(jCtx, idx, 0) != 0) {
+        if (duk_pcall_prop(jCtx, scriptIdx, 0) != 0) {
             std::cout << "Failed to initialize JavaScript:" << duk_safe_to_string(jCtx, -1) << std::endl;
-            return;
         }
-        std::cout << "JS Ret: " << duk_json_encode(jCtx, -1) << std::endl;
         duk_pop(jCtx);
+        jsInitialized = true;
     }
 }
 
@@ -68,11 +70,18 @@ void unloadHack() {
 
 void __stdcall HackThread(void* hModule) {
     Logger* logger = Factory::getDefaultLogger();
-    
     loadHack();
-
+    duk_context* jCtx = Factory::getDefaultJsContext();
     logger->log("Loaded HACKMAN 3", "HackThread");
     while (!GetAsyncKeyState(VK_NUMPAD0)) {
+        if (jsInitialized) {
+            duk_push_string(jCtx, "loop");
+            if (duk_pcall_prop(jCtx, scriptIdx, 0) != 0) {
+                std::cout << "Failed to run JavaScript loop:" << duk_safe_to_string(jCtx, -1) << std::endl;
+                jsInitialized = false;
+            }
+            duk_pop(jCtx);
+        }
         Sleep(1);
     }
     

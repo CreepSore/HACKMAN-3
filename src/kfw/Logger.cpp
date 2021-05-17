@@ -15,3 +15,20 @@ void kfw::core::Logger::log(const std::string& msg, const std::string& context)
 
     std::cout << "[" << buf << "]" << "[" << context << "] " << msg << std::endl;
 }
+
+duk_ret_t js_log(duk_context* ctx) {
+    const char* msg = duk_get_string(ctx, 0);
+    const char* context = "JavaScript";
+
+    if (duk_get_top(ctx) == 2) {
+        context = duk_get_string(ctx, 1);
+    }
+
+    kfw::core::Factory::getDefaultLogger()->log(msg, context);
+    return 0;
+}
+
+void kfw::core::Logger::setupJsContext(duk_context* ctx) {
+    duk_push_c_function(ctx, js_log, DUK_VARARGS);
+    duk_put_global_string(ctx, "log");
+}
