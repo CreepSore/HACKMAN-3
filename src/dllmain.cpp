@@ -1,31 +1,65 @@
 #include <Windows.h>
+#include <iostream>
+#include <fstream>
 #include "k-framework.h"
+
 
 using namespace kfw::core;
 
 PatchInfo* noRecoil = new PatchInfo("hitman3.exe", "\x74\x00\x48\x8d\x15\x00\x00\x00\x00\x48\x8d\x4c\x24\x00\xe8\x00\x00\x00\x00\x48\x8b\x4c\x24", "x?xxx????xxxx?x????xxxx", "\x74\x4B", "No Recoil");
 PatchInfo* noSpread = new PatchInfo("hitman3.exe", "\xf3\x44\x0f\x11\x87\x00\x00\x00\x00\x76", "xxxxx????x", "\x90\x90\x90\x90\x90\x90\x90\x90\x90", "No Spread");
-PatchInfo* infiniteAmmo = new PatchInfo("hitman3.exe", "\xe8\x00\x00\x00\x00\x83\xbf\x00\x00\x00\x00\x00\x76\x00\xc7\x87", "x????xx?????x?xx", "\x90\x90\x90\x90\x90", "Infinite Ammo");
+PatchInfo* infiniteAmmo = new PatchInfo("hitman3.exe", "\xe8\x00\x00\x00\x00\x83\xbf\x00\x00\x00\x00\x00\x76\x00\xc7\x87", "x????xx?????x?xx", "\x90\x90\x90\x90\x90", "Infinite Ammo"); // 0x140fc1c6
+PatchInfo* pistolsMakeNoSound = new PatchInfo("hitman3.exe", "\xff\x90\x00\x00\x00\x00\x48\x8b\x06\x48\x8b\xce\xff\x90\x00\x00\x00\x00\x0f\x28\xbc\x24", "xx????xxxxxxxx????xxxx", "\x90\x90\x90\x90\x90\x90", "No Pistol sound");
+
+void initializeJs() {
+    std::ifstream sScript("kfw.js");
+    std::string readScript((std::istreambuf_iterator<char>(sScript)),
+        std::istreambuf_iterator<char>());
+    sScript.close();
+
+    duk_context* jCtx = Factory::getDefaultJsContext();
+    Utils::setupJsContext(jCtx);
+    if (duk_peval_string(jCtx, readScript.c_str()) != 0) {
+        std::cout << "eval failed: %s\n" << duk_safe_to_string(jCtx, -1) << std::endl;
+    }
+    else {
+        duk_idx_t idx = 0;
+        duk_push_string(jCtx, "init");
+        if (duk_pcall_prop(jCtx, idx, 0) != 0) {
+            std::cout << "Failed to initialize JavaScript:" << duk_safe_to_string(jCtx, -1) << std::endl;
+            return;
+        }
+        std::cout << "JS Ret: " << duk_json_encode(jCtx, -1) << std::endl;
+        duk_pop(jCtx);
+    }
+}
 
 void loadHack() {
     Utils::setupConsole();
     Logger* logger = Factory::getDefaultLogger();
-    logger->log("Loading HACKMAN 3 ...", "HackThread");
-    logger->log("Patching hacks ...", "HackThread");
+    logger->log("Loading HACKMAN 3 ...", "loadHack");
+    logger->log("Patching hacks ...", "loadHack");
+
 
     noRecoil->patch();
-    noSpread->patch();
+    //noSpread->patch();
     infiniteAmmo->patch();
 
     Factory::getDefaultHookManager()->hookAll();
+    try {
+        initializeJs();
+    }
+    catch (const std::exception& ex) {
+        logger->log("Failed to initialize JavaScript", "loadHack");
+    }
 }
 
 void unloadHack() {
     Logger* logger = Factory::getDefaultLogger();
-    logger->log("Unloading HACKMAN 3 ...", "HackThread");
-    logger->log("Unpatching hacks ...", "HackThread");
+    logger->log("Unloading HACKMAN 3 ...", "unloadHack");
+    logger->log("Unpatching hacks ...", "unloadHack");
     noRecoil->unpatch();
-    noSpread->unpatch();
+    //noSpread->unpatch();
     infiniteAmmo->unpatch();
     Factory::cleanup();
     delete noRecoil;

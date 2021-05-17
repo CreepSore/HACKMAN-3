@@ -21,6 +21,12 @@
     <ClInclude Include="kfw\k-framework.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="duk_config.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="duktape.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -35,9 +41,6 @@
     <ClCompile Include="kfw\Hooking.cpp">
       <Filter>Quelldateien\kfw</Filter>
     </ClCompile>
-    <ClCompile Include="kfw\k-framework.cpp">
-      <Filter>Quelldateien\kfw</Filter>
-    </ClCompile>
     <ClCompile Include="kfw\Logger.cpp">
       <Filter>Quelldateien\kfw</Filter>
     </ClCompile>
@@ -47,5 +50,21 @@
     <ClCompile Include="kfw\Utils.cpp">
       <Filter>Quelldateien\kfw</Filter>
     </ClCompile>
+    <ClCompile Include="duktape.c">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="Utils.js.cpp">
+      <Filter>Quelldateien\kfw</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="hooks.asm">
+      <Filter>Quelldateien</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="kfw.js">
+      <Filter>Quelldateien</Filter>
+    </None>
   </ItemGroup>
 </Project>

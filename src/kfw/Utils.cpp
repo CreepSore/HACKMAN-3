@@ -33,6 +33,7 @@ DWORD64 kfw::core::Utils::findPattern(const DWORD64 addrFrom, const DWORD64 addr
         bool patternFailed = false;
         for (size_t pOff = 0; pOff < patternLength; pOff++)
         {
+            if (((DWORD64)current + pOff) >= addrTo) return 0;
             if (mask[pOff] == '?' || pattern[pOff] == current[pOff])
             {
                 continue;

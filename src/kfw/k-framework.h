@@ -3,6 +3,8 @@
 #include <string>
 #include <vector>
 
+#include "duktape.h"
+
 #ifdef _WIN64
 typedef DWORD64 VDWORD;
 #else
@@ -100,6 +102,7 @@ namespace kfw {
             static DWORD64 findPattern(const DWORD64 addrFrom, const DWORD64 addrTo, const char* pattern, const char* mask);
             static DWORD64 findPattern(const HMODULE module, const char* pattern, const char* mask);
             static DWORD64 findPattern(const char* module, const char* pattern, const char* mask);
+            static void setupJsContext(duk_context* ctx);
         };
     
         class PatchInfo {
@@ -128,10 +131,12 @@ namespace kfw {
             static HookManager* hookManager;
             static HackManager* hackManager;
             static Logger* logger;
+            static duk_context* jsContext;
         public:
             static HookManager* getDefaultHookManager();
             static HackManager* getDefaultHackManager();
             static Logger* getDefaultLogger();
+            static duk_context* getDefaultJsContext();
             static void cleanup();
         };
     }
